@@ -1,0 +1,68 @@
+name: Test Action
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test-without-api:
+    name: Test without API key
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Create test tags
+        run: |
+          git config user.name "Test"
+          git config user.email "test@example.com"
+          git tag -a v0.0.1 -m "Test tag 1" 2>/dev/null || true
+          git tag -a v0.0.2 -m "Test tag 2" 2>/dev/null || true
+      
+      - name: Test action (no API key)
+        id: test
+        uses: ./
+        with:
+          from-tag: v0.0.1
+          to-tag: HEAD
+      
+      - name: Display results
+        run: |
+          echo "### Test Results (No API Key)"
+          echo "From tag: ${{ steps.test.outputs.from-tag-used }}"
+          echo "To tag: ${{ steps.test.outputs.to-tag-used }}"
+          echo "Commit count: ${{ steps.test.outputs.commit-count }}"
+          echo ""
+          echo "Changelog:"
+          echo "${{ steps.test.outputs.changelog }}"
+
+  test-with-api:
+    name: Test with API key
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Test action (with API key)
+        id: test
+        uses: ./
+        with:
+          api-key: ${{ secrets.ZHIPU_API_KEY }}
+      
+      - name: Display results
+        run: |
+          echo "### Test Results (With API Key)"
+          echo "From tag: ${{ steps.test.outputs.from-tag-used }}"
+          echo "To tag: ${{ steps.test.outputs.to-tag-used }}"
+          echo "Commit count: ${{ steps.test.outputs.commit-count }}"
+          echo ""
+          echo "Changelog:"
+          echo "${{ steps.test.outputs.changelog }}"

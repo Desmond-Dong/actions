@@ -1,0 +1,91 @@
+name: '双语变更日志生成器 / Bilingual Changelog Generator'
+description: '自动提取两个 release 之间的变更记录并翻译成双语 / Automatically extract changes between releases and translate to bilingual format'
+author: 'Your Name'
+
+branding:
+  icon: 'file-text'
+  color: 'blue'
+
+inputs:
+  api-key:
+    description: 'AI API Key（智谱 AI）/ AI API Key (Zhipu AI)'
+    required: true
+  model:
+    description: 'AI 模型名称 / AI model name'
+    required: false
+    default: 'glm-4.7-flash'
+
+outputs:
+  changelog:
+    description: '生成的双语 changelog / Generated bilingual changelog'
+    value: ${{ steps.generate.outputs.changelog }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 生成双语变更日志 / Generate bilingual changelog
+      id: generate
+      shell: bash
+      env:
+        INPUT_API_KEY: ${{ inputs.api-key }}
+        INPUT_MODEL: ${{ inputs.model }}
+      run: |
+        # 获取上一个标签 / Get previous tag
+        git fetch --tags 2>/dev/null || true
+        prev_tag=$(git tag --sort=-creatordate | head -n 1)
+        
+        if [ -z "$prev_tag" ]; then
+          echo "⚠️  未找到标签，使用所有提交 / No tags found, using all commits"
+          log=$(git log --pretty=format:"- %s")
+        else
+          echo "📌 从标签 $prev_tag 到 HEAD / From tag $prev_tag to HEAD"
+          log=$(git log --pretty=format:"- %s" "$prev_tag"..HEAD)
+        fi
+        
+        if [ -z "$log" ]; then
+          echo "⚠️  未找到提交 / No commits found"
+          echo "changelog=未找到变更 / No changes found" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # 使用 AI 翻译 / Translate with AI
+        echo "🤖 使用 AI 翻译中... / Translating with AI..."
+        
+        prompt="请将以下 git commit 记录翻译成中英双语格式。如果原文是中文就翻译成英文，如果是英文就翻译成中文。输出格式：每条记录先显示中文，然后显示英文（用斜体），例如：
+        - 修复登录问题 / *Fix login issue*
+        
+        只输出翻译结果，不要其他内容。
+        
+        ${log}"
+        
+        response=$(curl -s https://open.bigmodel.cn/api/paas/v4/chat/completions \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $INPUT_API_KEY" \
+          -d "$(jq -n \
+            --arg content "$prompt" \
+            --arg model "$INPUT_MODEL" \
+            '{
+              "model": $model,
+              "messages": [{"role": "user", "content": $content}],
+              "temperature": 0.1
+            }')")
+        
+        translated=$(echo "$response" | jq -r '.choices[0].message.content // empty')
+        
+        if [ -n "$translated" ]; then
+          log="$translated"
+          echo "✅ 翻译完成 / Translation completed"
+        else
+          echo "⚠️  翻译失败，使用原始日志 / Translation failed, using original log"
+          error=$(echo "$response" | jq -r '.error.message // "Unknown error"')
+          echo "错误 / Error: $error"
+        fi
+        
+        # 输出结果 / Output results
+        {
+          echo "changelog<<EOF"
+          echo "$log"
+          echo "EOF"
+        } >> $GITHUB_OUTPUT
+        
+        echo "✨ 变更日志生成成功 / Changelog generated successfully"
