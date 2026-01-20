@@ -1,6 +1,6 @@
 name: '双语变更日志生成器 / Bilingual Changelog Generator'
 description: '自动提取两个 release 之间的变更记录并翻译成双语 / Automatically extract changes between releases and translate to bilingual format'
-author: 'Your Name'
+author: 'Desmond Dong'
 
 branding:
   icon: 'file-text'
