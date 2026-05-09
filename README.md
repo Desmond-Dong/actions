@@ -16,6 +16,8 @@ Automatically extract changes from previous release to current and translate to 
 - uses: Desmond-Dong/actions/bilingual-changelog@v1
   with:
     llm-api-key: ${{ secrets.LLM_API_KEY }}
+    llm-api-url: https://api.openai.com/v1/chat/completions
+    llm-model: gpt-4o-mini
 ```
 
 [查看文档 →](./bilingual-changelog/README.md)
