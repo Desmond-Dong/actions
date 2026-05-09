@@ -15,7 +15,7 @@ Automatically extract changes from previous release to current and translate to 
 ```yaml
 - uses: Desmond-Dong/actions/bilingual-changelog@v1
   with:
-    api-key: ${{ secrets.ZHIPU_API_KEY }}
+    llm-api-key: ${{ secrets.LLM_API_KEY }}
 ```
 
 [查看文档 →](./bilingual-changelog/README.md)
