@@ -8,8 +8,12 @@ branding:
 
 inputs:
   api-key:
-    description: 'AI API Key（智谱 AI）/ AI API Key (Zhipu AI)'
+    description: 'AI API Key / AI API Key'
     required: true
+  api-base-url:
+    description: 'LLM Chat Completions API 地址 / LLM Chat Completions API URL'
+    required: false
+    default: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
   model:
     description: 'AI 模型名称 / AI model name'
     required: false
@@ -28,6 +32,7 @@ runs:
       shell: bash
       env:
         INPUT_API_KEY: ${{ inputs.api-key }}
+        INPUT_API_BASE_URL: ${{ inputs.api-base-url }}
         INPUT_MODEL: ${{ inputs.model }}
       run: |
         # 获取上一个标签 / Get previous tag
@@ -50,7 +55,13 @@ runs:
         
         # 使用 AI 翻译 / Translate with AI
         echo "🤖 使用 AI 翻译中... / Translating with AI..."
-        
+
+        api_url="${INPUT_API_BASE_URL%/}"
+        if [ -z "$api_url" ]; then
+          echo "⚠️  API 地址为空，使用默认接口 / API URL is empty, using default endpoint"
+          api_url="https://open.bigmodel.cn/api/paas/v4/chat/completions"
+        fi
+
         prompt="请将以下 git commit 记录翻译成中英双语格式。如果原文是中文就翻译成英文，如果是英文就翻译成中文。输出格式：每条记录先显示中文，然后显示英文（用斜体），例如：
         - 修复登录问题 / *Fix login issue*
         
@@ -58,7 +69,7 @@ runs:
         
         ${log}"
         
-        response=$(curl -s https://open.bigmodel.cn/api/paas/v4/chat/completions \
+        response=$(curl -s "$api_url" \
           -H "Content-Type: application/json" \
           -H "Authorization: Bearer $INPUT_API_KEY" \
           -d "$(jq -n \

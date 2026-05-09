@@ -33,7 +33,7 @@ jobs:
         id: changelog
         uses: Desmond-Dong/actions/bilingual-changelog@v1
         with:
-          api-key: ${{ secrets.ZHIPU_API_KEY }}
+          api-key: ${{ secrets.LLM_API_KEY }}
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -46,8 +46,8 @@ jobs:
 ### 2. 添加 API Key
 
 进入仓库 Settings → Secrets and variables → Actions → New repository secret
-- Name: `ZHIPU_API_KEY`
-- Value: 你的智谱 AI API Key（[获取地址](https://open.bigmodel.cn/)）
+- Name: `LLM_API_KEY`
+- Value: 你的 LLM API Key
 
 ### 3. 推送 tag
 
@@ -64,7 +64,8 @@ git push origin v1.0.0
 
 | Name | Description | Required | Default |
 |------|-------------|----------|---------|
-| `api-key` | 智谱 AI API Key | Yes | - |
+| `api-key` | LLM API Key | Yes | - |
+| `api-base-url` | LLM Chat Completions API URL | No | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
 | `model` | AI 模型名称 | No | `glm-4.7-flash` |
 
 ### Outputs
@@ -78,8 +79,18 @@ git push origin v1.0.0
 ```yaml
 - uses: Desmond-Dong/actions/bilingual-changelog@v1
   with:
-    api-key: ${{ secrets.ZHIPU_API_KEY }}
+    api-key: ${{ secrets.LLM_API_KEY }}
     model: 'glm-4-plus'
+```
+
+## 自定义 API / Custom API
+
+```yaml
+- uses: Desmond-Dong/actions/bilingual-changelog@v1
+  with:
+    api-key: ${{ secrets.LLM_API_KEY }}
+    api-base-url: https://api.openai.com/v1/chat/completions
+    model: gpt-4o-mini
 ```
 
 ## 输出格式 / Output Format
