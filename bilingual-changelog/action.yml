@@ -7,15 +7,15 @@ branding:
   color: 'blue'
 
 inputs:
-  api-key:
-    description: 'AI API Key / AI API Key'
+  llm-api-key:
+    description: 'LLM API Key / LLM API Key'
     required: true
-  api-base-url:
+  llm-api-url:
     description: 'LLM Chat Completions API 地址 / LLM Chat Completions API URL'
     required: false
     default: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
-  model:
-    description: 'AI 模型名称 / AI model name'
+  llm-model:
+    description: 'LLM 模型名称 / LLM model name'
     required: false
     default: 'glm-4.7-flash'
 
@@ -31,9 +31,9 @@ runs:
       id: generate
       shell: bash
       env:
-        INPUT_API_KEY: ${{ inputs.api-key }}
-        INPUT_API_BASE_URL: ${{ inputs.api-base-url }}
-        INPUT_MODEL: ${{ inputs.model }}
+        INPUT_LLM_API_KEY: ${{ inputs.llm-api-key }}
+        INPUT_LLM_API_URL: ${{ inputs.llm-api-url }}
+        INPUT_LLM_MODEL: ${{ inputs.llm-model }}
       run: |
         # 获取上一个标签 / Get previous tag
         git fetch --tags 2>/dev/null || true
@@ -56,7 +56,7 @@ runs:
         # 使用 AI 翻译 / Translate with AI
         echo "🤖 使用 AI 翻译中... / Translating with AI..."
 
-        api_url="${INPUT_API_BASE_URL%/}"
+        api_url="${INPUT_LLM_API_URL%/}"
         if [ -z "$api_url" ]; then
           echo "⚠️  API 地址为空，使用默认接口 / API URL is empty, using default endpoint"
           api_url="https://open.bigmodel.cn/api/paas/v4/chat/completions"
@@ -71,10 +71,10 @@ runs:
         
         response=$(curl -s "$api_url" \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $INPUT_API_KEY" \
+          -H "Authorization: Bearer $INPUT_LLM_API_KEY" \
           -d "$(jq -n \
             --arg content "$prompt" \
-            --arg model "$INPUT_MODEL" \
+            --arg model "$INPUT_LLM_MODEL" \
             '{
               "model": $model,
               "messages": [{"role": "user", "content": $content}],

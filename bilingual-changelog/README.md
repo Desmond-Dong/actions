@@ -33,7 +33,7 @@ jobs:
         id: changelog
         uses: Desmond-Dong/actions/bilingual-changelog@v1
         with:
-          api-key: ${{ secrets.LLM_API_KEY }}
+          llm-api-key: ${{ secrets.LLM_API_KEY }}
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -64,9 +64,9 @@ git push origin v1.0.0
 
 | Name | Description | Required | Default |
 |------|-------------|----------|---------|
-| `api-key` | LLM API Key | Yes | - |
-| `api-base-url` | LLM Chat Completions API URL | No | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
-| `model` | AI 模型名称 | No | `glm-4.7-flash` |
+| `llm-api-key` | LLM API Key | Yes | - |
+| `llm-api-url` | LLM Chat Completions API URL | No | `https://open.bigmodel.cn/api/paas/v4/chat/completions` |
+| `llm-model` | LLM 模型名称 | No | `glm-4.7-flash` |
 
 ### Outputs
 
@@ -79,8 +79,8 @@ git push origin v1.0.0
 ```yaml
 - uses: Desmond-Dong/actions/bilingual-changelog@v1
   with:
-    api-key: ${{ secrets.LLM_API_KEY }}
-    model: 'glm-4-plus'
+    llm-api-key: ${{ secrets.LLM_API_KEY }}
+    llm-model: 'glm-4-plus'
 ```
 
 ## 自定义 API / Custom API
@@ -88,9 +88,9 @@ git push origin v1.0.0
 ```yaml
 - uses: Desmond-Dong/actions/bilingual-changelog@v1
   with:
-    api-key: ${{ secrets.LLM_API_KEY }}
-    api-base-url: https://api.openai.com/v1/chat/completions
-    model: gpt-4o-mini
+    llm-api-key: ${{ secrets.LLM_API_KEY }}
+    llm-api-url: https://api.openai.com/v1/chat/completions
+    llm-model: gpt-4o-mini
 ```
 
 ## 输出格式 / Output Format
