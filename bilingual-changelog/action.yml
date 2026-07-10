@@ -41,10 +41,10 @@ runs:
         
         if [ -z "$prev_tag" ]; then
           echo "⚠️  未找到标签，使用所有提交 / No tags found, using all commits"
-          log=$(git log --pretty=format:"- %s")
+          log=$(git log --pretty=format:"- %s (@%an)")
         else
           echo "📌 从标签 $prev_tag 到 HEAD / From tag $prev_tag to HEAD"
-          log=$(git log --pretty=format:"- %s" "$prev_tag"..HEAD)
+          log=$(git log --pretty=format:"- %s (@%an)" "$prev_tag"..HEAD)
         fi
         
         if [ -z "$log" ]; then
@@ -62,17 +62,29 @@ runs:
           api_url="https://open.bigmodel.cn/api/paas/v4/chat/completions"
         fi
 
-        prompt="请将以下 git commit 记录整理成中英双语 changelog。如果原文是中文就翻译成英文，如果是英文就翻译成中文。务必保留每条 commit 开头的类型前缀，不允许省略，例如 fix:、docs:、chore:、refactor:、feat: 等；前缀可以翻译，但必须明确保留在中文和英文版本里。输出时不要中英文穿插，必须严格分成两个区块，先输出全部英文，再输出全部中文。格式如下：
+        prompt="请将以下 git commit 记录按类型分组整理成中英双语 changelog。如果原文是中文就翻译成英文，如果是英文就翻译成中文。务必保留每条 commit 开头的类型前缀，不允许省略，例如 fix:、docs:、chore:、refactor:、feat: 等；前缀可以翻译，但必须明确保留在中文和英文版本里。按类型前缀（如 feat / fix / docs / refactor / chore 等）分类分组，每组内先输出全部英文，再输出全部中文。不要中英文穿插。格式如下：
 
         English
+
+        Features
+        - Feat: add user management
+        - Feat: improve performance
+
+        Bug Fixes
         - Fix: login issue
-        - Docs: update README
+        - Fix: fix crash on startup
 
-        中文
+        Chinese
+
+        功能
+        - 新增: 用户管理
+        - 优化: 性能提升
+
+        Bug 修复
         - 修复: 登录问题
-        - 文档: 更新 README
+        - 修复: 修复启动崩溃
 
-        只输出整理后的结果，不要其他内容。
+        @作者 的部分请用加粗（**@作者**）醒目标示。只输出整理后的结果，不要其他内容。
 
         ${log}"
         
