@@ -41,10 +41,10 @@ runs:
         
         if [ -z "$prev_tag" ]; then
           echo "⚠️  未找到标签，使用所有提交 / No tags found, using all commits"
-          log=$(git log --pretty=format:"- %s (@%an)")
+          log=$(git log --pretty=format:"- %s (@%ae)" | sed -E 's/\(@([^@]+)@[^)]+\)/(@\1)/')
         else
           echo "📌 从标签 $prev_tag 到 HEAD / From tag $prev_tag to HEAD"
-          log=$(git log --pretty=format:"- %s (@%an)" "$prev_tag"..HEAD)
+          log=$(git log --pretty=format:"- %s (@%ae)" "$prev_tag"..HEAD | sed -E 's/\(@([^@]+)@[^)]+\)/(@\1)/')
         fi
         
         if [ -z "$log" ]; then
@@ -84,7 +84,7 @@ runs:
         - 修复: 登录问题
         - 修复: 修复启动崩溃
 
-        @作者 的部分请用加粗（**@作者**）醒目标示。只输出整理后的结果，不要其他内容。
+        @用户名（如 @username）请用加粗（**@用户名**）醒目标示。只输出整理后的结果，不要其他内容。
 
         ${log}"
         
