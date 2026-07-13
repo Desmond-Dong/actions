@@ -34,17 +34,34 @@ runs:
         INPUT_LLM_API_KEY: ${{ inputs.llm-api-key }}
         INPUT_LLM_API_URL: ${{ inputs.llm-api-url }}
         INPUT_LLM_MODEL: ${{ inputs.llm-model }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         # 获取上一个标签 / Get previous tag
         git fetch --tags 2>/dev/null || true
         prev_tag=$(git tag --sort=-creatordate | head -n 1)
         
-        if [ -z "$prev_tag" ]; then
-          echo "⚠️  未找到标签，使用所有提交 / No tags found, using all commits"
-          log=$(git log --pretty=format:"- %s (@%ae)" | sed -E 's/\(@([^@]+)@[^)]+\)/(@\1)/')
-        else
+        repo="${GITHUB_REPOSITORY}"
+        head_sha="${GITHUB_SHA}"
+        log=""
+        
+        # 通过 GitHub API 获取提交，author.login 由 GitHub 解析（含私有已验证邮箱）
+        # Fetch commits via GitHub API; author.login resolves via all verified emails
+        if [ -n "$prev_tag" ]; then
           echo "📌 从标签 $prev_tag 到 HEAD / From tag $prev_tag to HEAD"
-          log=$(git log --pretty=format:"- %s (@%ae)" "$prev_tag"..HEAD | sed -E 's/\(@([^@]+)@[^)]+\)/(@\1)/')
+          log=$(gh api "repos/$repo/compare/$prev_tag...$head_sha" --paginate 2>/dev/null \
+            | jq -r '
+                .commits[]? |
+                "- \(.commit.message | split("\n")[0])" +
+                (if .author.login then " (@\(.author.login))" else "" end)
+              ' 2>/dev/null || true)
+        else
+          echo "⚠️  未找到标签，使用最近的提交 / No tags found, using recent commits"
+          log=$(gh api "repos/$repo/commits?per_page=100" --paginate 2>/dev/null \
+            | jq -r '
+                .[]? |
+                "- \(.commit.message | split("\n")[0])" +
+                (if .author.login then " (@\(.author.login))" else "" end)
+              ' 2>/dev/null || true)
         fi
         
         if [ -z "$log" ]; then
