@@ -13,11 +13,15 @@ Collection of reusable GitHub Actions.
 Automatically extract changes from previous release to current and translate to bilingual format.
 
 ```yaml
-- uses: Desmond-Dong/actions/bilingual-changelog@v1
+
+- name: Generate changelog
+  id: changelog
+  if: github.event_name != 'release' && steps.check_tag.outputs.exists == 'false'
+  uses: Desmond-Dong/actions/bilingual-changelog@main
   with:
     llm-api-key: ${{ secrets.LLM_API_KEY }}
-    llm-api-url: https://api.openai.com/v1/chat/completions
-    llm-model: gpt-4o-mini
+    llm-api-url: ${{ secrets.LLM_API_URL }}
+    llm-model: ${{ secrets.LLM_MODEL }}
 ```
 
 [查看文档 →](./bilingual-changelog/README.md)
