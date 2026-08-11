@@ -28,12 +28,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
       - name: Generate changelog
         id: changelog
-        uses: Desmond-Dong/actions/bilingual-changelog@v1
+        if: github.event_name != 'release' && steps.check_tag.outputs.exists == 'false'
+        uses: Desmond-Dong/actions/bilingual-changelog@main
         with:
           llm-api-key: ${{ secrets.LLM_API_KEY }}
+          llm-api-url: ${{ secrets.LLM_API_URL }}
+          llm-model: ${{ secrets.LLM_MODEL }}
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -77,7 +79,7 @@ git push origin v1.0.0
 ## 自定义模型 / Custom Model
 
 ```yaml
-- uses: Desmond-Dong/actions/bilingual-changelog@v1
+- uses: Desmond-Dong/actions/bilingual-changelog@main
   with:
     llm-api-key: ${{ secrets.LLM_API_KEY }}
     llm-model: 'glm-4-plus'
@@ -86,11 +88,11 @@ git push origin v1.0.0
 ## 自定义 API / Custom API
 
 ```yaml
-- uses: Desmond-Dong/actions/bilingual-changelog@v1
+- uses: Desmond-Dong/actions/bilingual-changelog@main
   with:
     llm-api-key: ${{ secrets.LLM_API_KEY }}
-    llm-api-url: https://api.openai.com/v1/chat/completions
-    llm-model: gpt-4o-mini
+    llm-api-url: ${{ secrets.LLM_API_URL }}
+    llm-model: ${{ secrets.LLM_MODEL }}
 ```
 
 ## 输出格式 / Output Format
